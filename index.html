@@ -1035,6 +1035,8 @@ html,body{
   display:inline-flex;
   align-items:center;
   gap:10px;
+    touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 #page4 .btnPill:active{ transform:scale(.98); }
 
@@ -1137,10 +1139,12 @@ html,body{
 #page2 .cell path,
 #page1 .play-btn svg,
 #page1 #icon,
-#page4 .btnPill svg,
-#page4 .spotifyIcon {
+#page4 .btnPill svg {
   pointer-events: none;
 }
+
+/* IMPORTANT: biarin icon spotify bisa kena tap (atau minimal ga ganggu link) */
+#page4 .spotifyIcon { pointer-events: auto; }
 </style>
 </head>
 
@@ -1935,6 +1939,13 @@ function initPage4(){
    START
 ========================= */
 startNeon(); // page1 default
+// === iOS Safari fix: ensure Spotify button always clickable ===
+const spotifyBtn = document.getElementById("spotifyBtn");
+if(spotifyBtn){
+  spotifyBtn.addEventListener("pointerdown", () => {
+    window.open(spotifyBtn.href, "_blank", "noopener");
+  }, { passive:true });
+}
 </script>
 </body>
 </html>
