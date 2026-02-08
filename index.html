@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport"
-  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>will you be my valentine?</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
@@ -1121,6 +1120,27 @@ html,body{
   12%{opacity:.95}
   to{ transform:translateY(-120vh) scale(var(--s)); opacity:0 }
 }
+
+/* Prevent iOS double-tap zoom on interactive parts (without disabling pinch zoom globally) */
+#page1 .answer button,
+#page1 .play-btn,
+#page2 .cell,
+#page2 .tappable,
+#page4 .btnPill,
+#page3 .btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Make taps hit the container (div) not the SVG/path */
+#page2 .cell svg,
+#page2 .cell path,
+#page1 .play-btn svg,
+#page1 #icon,
+#page4 .btnPill svg,
+#page4 .spotifyIcon {
+  pointer-events: none;
+}
 </style>
 </head>
 
@@ -1703,51 +1723,55 @@ function initPage2(){
   if(!p2Inited){
     const tappables = document.querySelectorAll("#page2 .tappable");
 
-    tappables.forEach(cell=>{
-      cell.addEventListener("click", ()=>{
-        if(won) return;
-        const order = Number(cell.dataset.order);
-        if(order !== step) return;
+tappables.forEach(cell=>{
+  cell.addEventListener("pointerdown", (e)=>{
+    e.preventDefault();
 
-        placeHeart(cell);
-        step++;
+    if(won) return;
+    const order = Number(cell.dataset.order);
+    if(order !== step) return;
 
-        if(step === 4){
-          won = true;
+    placeHeart(cell);
+    step++;
 
-          const c12 = document.querySelector('[data-cell="r1c2"]');
-          const c32 = document.querySelector('[data-cell="r3c2"]');
+    if(step === 4){
+      won = true;
 
-          setTimeout(()=> setWord(c12, "you<br>won"), 220);
-          setTimeout(()=> setWord(c32, "my<br>heart", true), 340);
+      const c12 = document.querySelector('[data-cell="r1c2"]');
+      const c32 = document.querySelector('[data-cell="r3c2"]');
 
-          document.getElementById("footerHint").style.display = "block";
-          document.getElementById("counterPill").style.display = "block";
+      setTimeout(()=> setWord(c12, "you<br>won"), 220);
+      setTimeout(()=> setWord(c32, "my<br>heart", true), 340);
 
-          const c22 = document.querySelector('[data-cell="r2c2"]');
-          c22.style.cursor = "pointer";
+      document.getElementById("footerHint").style.display = "block";
+      document.getElementById("counterPill").style.display = "block";
 
-          if(!midTapHandlerBound){
-            midTapHandlerBound = true;
-            c22.addEventListener("click", ()=>{
-              if(currentPage !== "page2") return;
-              if(!c22.classList.contains("placed")) return;
-              if(!won) return;
+      const c22 = document.querySelector('[data-cell="r2c2"]');
+      c22.style.cursor = "pointer";
 
-              midTap++;
-              document.getElementById("tapCount").textContent = midTap;
+      if(!midTapHandlerBound){
+        midTapHandlerBound = true;
+        c22.addEventListener("pointerdown", (e)=>{
+          e.preventDefault();
 
-              c22.style.transform = "scale(1.06)";
-              setTimeout(()=> c22.style.transform = "", 90);
+          if(currentPage !== "page2") return;
+          if(!c22.classList.contains("placed")) return;
+          if(!won) return;
 
-              if(midTap >= 10){
-                showPage("page3");
-              }
-            });
+          midTap++;
+          document.getElementById("tapCount").textContent = midTap;
+
+          c22.style.transform = "scale(1.06)";
+          setTimeout(()=> c22.style.transform = "", 90);
+
+          if(midTap >= 10){
+            showPage("page3");
           }
-        }
-      });
-    });
+        }, { passive:false });
+      }
+    }
+  }, { passive:false });
+});
 
     p2Inited = true;
   }
